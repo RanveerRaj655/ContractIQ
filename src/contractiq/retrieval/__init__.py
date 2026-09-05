@@ -8,5 +8,6 @@ Import any retriever directly from this package:
 from contractiq.retrieval.bm25 import BM25Retriever
 from contractiq.retrieval.dense import DenseRetriever
 from contractiq.retrieval.hybrid import HybridRetriever
+from contractiq.retrieval.reranker import CrossEncoderReranker
 
-__all__ = ["BM25Retriever", "DenseRetriever", "HybridRetriever"]
+__all__ = ["BM25Retriever", "DenseRetriever", "HybridRetriever", "CrossEncoderReranker"]

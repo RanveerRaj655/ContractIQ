@@ -45,6 +45,13 @@ class Settings(BaseSettings):
     # ── Hybrid retrieval (RRF) ────────────────────────────────────────────
     rrf_k: int = 60
 
+    # ── Reranker ─────────────────────────────────────────────────────────
+    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    rerank_fetch_k: int = 20
+
+    # ── Pipeline ─────────────────────────────────────────────────────────
+    active_retrieval_strategy: str = "hybrid_rerank"  # "bm25", "dense", "hybrid", "hybrid_rerank"
+
     # ── LLM / Generation ─────────────────────────────────────────────────
     anthropic_api_key: str = ""
     anthropic_model: str = "claude-sonnet-4-20250514"

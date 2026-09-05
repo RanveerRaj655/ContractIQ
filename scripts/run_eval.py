@@ -28,6 +28,7 @@ from contractiq.eval import RetrievedSpan, f1, precision_recall
 from contractiq.retrieval.bm25 import BM25Retriever
 from contractiq.retrieval.dense import DenseRetriever
 from contractiq.retrieval.hybrid import HybridRetriever
+from contractiq.retrieval.reranker import CrossEncoderReranker
 
 CORPUS_DIR = settings.corpus_dir
 BENCH_PATH = settings.benchmark_mini
@@ -95,10 +96,21 @@ def main():
         batch_size=settings.embedding_batch_size,
     )
 
-    print("Building Hybrid retriever (BM25 + Dense, RRF) ...\n")
+    print("Building Hybrid retriever (BM25 + Dense, RRF) ...")
     hybrid_struct = HybridRetriever(
         bm25_struct, dense_struct, rrf_k=settings.rrf_k
     )
+
+    print("Building Cross-Encoder Reranker ...\n")
+    reranker = CrossEncoderReranker(model_name=settings.reranker_model)
+
+    # Helper to wrap the reranker for the eval loop
+    class RerankedRetriever:
+        def search(self, query: str, k: int = TOP_K):
+            candidates = hybrid_struct.search(query, k=settings.rerank_fetch_k)
+            return reranker.rerank(query, candidates, top_k=k)
+
+    hybrid_rerank_struct = RerankedRetriever()
 
     # ── Define evaluation configs ────────────────────────────────────────
     configs = [
@@ -106,6 +118,7 @@ def main():
         ("structure_aware + BM25",       bm25_struct),
         ("structure_aware + Dense",      dense_struct),
         ("structure_aware + Hybrid",     hybrid_struct),
+        ("structure_aware + Hybrid + Rerank", hybrid_rerank_struct),
     ]
 
     results_summary = {}
