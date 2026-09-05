@@ -57,6 +57,9 @@ class Settings(BaseSettings):
     openrouter_model: str = "openai/gpt-4o-mini"
     generation_max_tokens: int = 1024
     generation_temperature: float = 0.0
+    
+    # ── Guardrails ───────────────────────────────────────────────────────
+    abstention_threshold: float = -4.0
 
     # ── Eval thresholds ──────────────────────────────────────────────────
     f1_pass_threshold: float = 0.05  # minimum F1 to consider a query "answered"

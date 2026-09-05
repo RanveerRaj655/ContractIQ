@@ -1,12 +1,13 @@
 """
 run_regression.py
 -----------------
-Runs the end-to-end RAG pipeline over the questions in tests/regression_questions.json.
-Outputs a markdown file with side-by-side comparisons of the expected vs actual answers.
+Runs the end-to-end RAG pipeline with guardrails over regression_questions.json.
+Outputs a markdown file for visual comparison and a structured JSONL for observability.
 """
 
 import json
 import sys
+import time
 from pathlib import Path
 
 # Add src/ to the path
@@ -16,6 +17,7 @@ from contractiq.chunking import structure_aware_chunk
 from contractiq.config import settings
 from contractiq.pipeline import RetrievalPipeline
 from contractiq.generation import LLMClient
+from contractiq.guardrails import scan_input, should_abstain, check_hallucination
 
 
 def load_corpus() -> list:
@@ -42,16 +44,21 @@ def main():
         questions = json.load(f)
 
     all_chunks = load_corpus()
-
-    print(f"Initializing RetrievalPipeline (strategy: {settings.active_retrieval_strategy})...")
     pipeline = RetrievalPipeline(all_chunks)
-    
-    print("Initializing LLMClient...")
     llm = LLMClient()
 
-    results_md = "# Regression Test Results\n\n"
+    out_dir = settings.eval_results_dir
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_md = out_dir / "regression_results.md"
+    out_jsonl = out_dir / "query_log.jsonl"
+    
+    # Open jsonl for appending observability logs
+    log_file = open(out_jsonl, "w", encoding="utf-8")
+    results_md = "# Regression Test Results (Guarded Pipeline)\n\n"
 
     for i, q in enumerate(questions, 1):
+        start_time = time.time()
+        
         query = q["query"]
         expected = q["expected_answer"]
         q_type = q["type"]
@@ -59,34 +66,72 @@ def main():
 
         print(f"\nProcessing [{i}/{len(questions)}] ({q_type}): {query[:50]}...")
         
-        # We append the target contract to the query for the retriever so it knows which document to search in
+        # 1. Input Filter
+        input_flags = scan_input(query)
+        
+        # We append the target contract to the query for the retriever
         targeted_query = f"{query} Document: {contract}"
         
+        # 2. Retrieve
         retrieved_chunks = pipeline.retrieve(targeted_query, k=settings.top_k)
         
-        if not retrieved_chunks:
+        # 3. Abstention Check
+        top_scores = [score for chunk, score in retrieved_chunks]
+        top_score = max(top_scores) if top_scores else 0.0
+        abstained = should_abstain(top_scores)
+        
+        actual = ""
+        hallucination_verdict = "N/A"
+        hallucination_reason = ""
+        
+        if abstained:
+            actual = f"Insufficient context (Score {top_score:.4f} < Threshold {settings.abstention_threshold}). Abstained."
+        elif not retrieved_chunks:
             actual = "No chunks retrieved."
         else:
+            # 4. Generate
             actual = llm.generate_answer(query, retrieved_chunks)
+            # 5. Hallucination Check
+            hallucination_result = check_hallucination(llm, query, actual, retrieved_chunks)
+            hallucination_verdict = hallucination_result["verdict"]
+            hallucination_reason = hallucination_result["reason"]
+
+        latency_ms = int((time.time() - start_time) * 1000)
+
+        # Build observability log
+        log_entry = {
+            "query_index": i,
+            "query_type": q_type,
+            "query": query,
+            "input_flags": input_flags,
+            "top_retrieval_score": top_score,
+            "abstained": abstained,
+            "latency_ms": latency_ms,
+            "hallucination_verdict": hallucination_verdict,
+            "hallucination_reason": hallucination_reason,
+            "answer": actual
+        }
+        log_file.write(json.dumps(log_entry) + "\n")
+        log_file.flush()
 
         results_md += f"## Question {i} ({q_type.capitalize()})\n"
-        results_md += f"**Target Document**: `{contract}`\n\n"
+        results_md += f"**Target Document**: `{contract}`\n"
+        results_md += f"**Abstained**: {abstained} (Score: {top_score:.4f})\n"
+        results_md += f"**Hallucination Verdict**: {hallucination_verdict}\n\n"
         results_md += f"**Query**: {query}\n\n"
         results_md += "| Expected | Actual |\n"
         results_md += "|----------|--------|\n"
-        # Clean up newlines for the markdown table
         expected_clean = expected.replace("\n", " ")
         actual_clean = actual.replace("\n", "<br>")
         results_md += f"| {expected_clean} | {actual_clean} |\n\n"
 
-    out_dir = settings.eval_results_dir
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / "regression_results.md"
+    log_file.close()
     
-    with open(out_path, "w", encoding="utf-8") as f:
+    with open(out_md, "w", encoding="utf-8") as f:
         f.write(results_md)
         
-    print(f"\nDone! Results written to {out_path}")
+    print(f"\nDone! Observability logs written to {out_jsonl}")
+    print(f"Results written to {out_md}")
 
 
 if __name__ == "__main__":
