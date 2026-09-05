@@ -62,7 +62,7 @@ def main():
     with open(BENCH_PATH) as f:
         bench = json.load(f)
     tests = bench["tests"]
-    doc_ids = {snip["file_path"] for t in tests for snip in t["snippets"]}
+    doc_ids = sorted({snip["file_path"] for t in tests for snip in t["snippets"]})
     print(f"Mini benchmark: {len(tests)} queries over {len(doc_ids)} contracts\n")
 
     results_summary = {}

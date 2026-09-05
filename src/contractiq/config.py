@@ -53,8 +53,8 @@ class Settings(BaseSettings):
     active_retrieval_strategy: str = "hybrid_rerank"  # "bm25", "dense", "hybrid", "hybrid_rerank"
 
     # ── LLM / Generation ─────────────────────────────────────────────────
-    anthropic_api_key: str = ""
-    anthropic_model: str = "claude-sonnet-4-20250514"
+    openrouter_api_key: str = ""
+    openrouter_model: str = "openai/gpt-4o-mini"
     generation_max_tokens: int = 1024
     generation_temperature: float = 0.0
 

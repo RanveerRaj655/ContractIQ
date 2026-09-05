@@ -1,15 +1,15 @@
 """
-debug_query.py
---------------
-CLI tool to test queries manually through the active retrieval pipeline.
-Useful for sanity checking results by hand.
+ask.py
+------
+CLI script for end-to-end RAG (Retrieval + Generation).
 
 Usage:
-  python scripts/debug_query.py "What is the governing law?"
+  python scripts/ask.py "What is the governing law?"
 """
 
 import argparse
 import sys
+import json
 from pathlib import Path
 
 # Add src/ to the path
@@ -18,16 +18,15 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from contractiq.chunking import structure_aware_chunk
 from contractiq.config import settings
 from contractiq.pipeline import RetrievalPipeline
+from contractiq.generation import LLMClient
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Debug a query through the retrieval pipeline.")
+    parser = argparse.ArgumentParser(description="End-to-End RAG: Ask a question about the contracts.")
     parser.add_argument("query", type=str, help="The query string to test")
-    parser.add_argument("--k", type=int, default=settings.top_k, help="Number of chunks to return")
     args = parser.parse_args()
 
     print(f"Loading 40 benchmark contracts from {settings.corpus_dir}...")
-    import json
     with open(settings.benchmark_mini, encoding="utf-8") as f:
         bench = json.load(f)
     doc_ids = sorted({snip["file_path"] for t in bench["tests"] for snip in t["snippets"]})
@@ -37,7 +36,6 @@ def main():
         print("Error: No text files found.")
         sys.exit(1)
 
-    print(f"Chunking {len(corpus_files)} documents...")
     all_chunks = []
     for filepath in corpus_files:
         text = filepath.read_text(encoding="utf-8")
@@ -46,19 +44,26 @@ def main():
     print(f"Initializing RetrievalPipeline (strategy: {settings.active_retrieval_strategy})...")
     pipeline = RetrievalPipeline(all_chunks)
 
-    print(f"\nSearching for: '{args.query}'\n" + "=" * 50)
-    
-    results = pipeline.retrieve(args.query, k=args.k)
+    print(f"Retrieving chunks for query: '{args.query}'...")
+    results = pipeline.retrieve(args.query, k=settings.top_k)
     
     if not results:
-        print("No results found.")
+        print("No chunks retrieved.")
         return
 
-    for rank, (chunk, score) in enumerate(results, 1):
-        print(f"\n[Rank {rank}] Score: {score:.4f} | Document: {chunk.doc_id} | Chars: {chunk.start}-{chunk.end}")
-        print("-" * 50)
-        print(chunk.text.strip())
-        print("-" * 50)
+    print("Generating answer...")
+    llm = LLMClient()
+    answer = llm.generate_answer(args.query, results)
+
+    print("\n" + "=" * 60)
+    print("ANSWER:")
+    print("=" * 60)
+    print(answer)
+    print("\n" + "=" * 60)
+    print("SOURCES USED:")
+    print("=" * 60)
+    for i, (chunk, score) in enumerate(results, 1):
+        print(f"[Chunk {i}] Document: {chunk.doc_id} (Score: {score:.4f})")
 
 if __name__ == "__main__":
     main()

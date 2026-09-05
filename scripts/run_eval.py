@@ -39,7 +39,7 @@ def load_benchmark() -> tuple[list[dict], set[str]]:
     with open(BENCH_PATH, encoding="utf-8") as f:
         bench = json.load(f)
     tests = bench["tests"]
-    doc_ids = {snip["file_path"] for t in tests for snip in t["snippets"]}
+    doc_ids = sorted({snip["file_path"] for t in tests for snip in t["snippets"]})
     return tests, doc_ids
 
 

@@ -7,6 +7,6 @@ pydantic
 pydantic-settings
 streamlit
 python-dotenv
-anthropic
+openai
 pytest
 ruff
