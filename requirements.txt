@@ -1,0 +1,11 @@
+rank_bm25
+sentence-transformers
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+streamlit
+python-dotenv
+anthropic
+pytest
+ruff
