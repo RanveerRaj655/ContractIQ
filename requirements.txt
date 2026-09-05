@@ -12,3 +12,5 @@ pytest
 ruff
 fastapi
 uvicorn[standard]
+streamlit
+requests
