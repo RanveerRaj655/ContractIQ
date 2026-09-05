@@ -28,5 +28,5 @@ data/raw/
 .DS_Store
 Thumbs.db
 
-# Faiss index (binary, regenerated)
-data/faiss_index/
+# FAISS index (binary, regenerated)
+data/index/

@@ -1,0 +1,22 @@
+{
+  "naive_fixed + BM25": {
+    "precision": 0.010945,
+    "recall": 0.08097,
+    "f1": 0.017142
+  },
+  "structure_aware + BM25": {
+    "precision": 0.010535,
+    "recall": 0.084992,
+    "f1": 0.017042
+  },
+  "structure_aware + Dense": {
+    "precision": 0.007745,
+    "recall": 0.072246,
+    "f1": 0.01276
+  },
+  "structure_aware + Hybrid": {
+    "precision": 0.011678,
+    "recall": 0.095723,
+    "f1": 0.018788
+  }
+}

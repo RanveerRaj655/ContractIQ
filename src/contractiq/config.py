@@ -37,9 +37,13 @@ class Settings(BaseSettings):
     # ── Retrieval ────────────────────────────────────────────────────────
     top_k: int = 5
 
-    # ── Dense retrieval (for later) ──────────────────────────────────────
-    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
-    faiss_index_path: Path = _PROJECT_ROOT / "data" / "faiss_index"
+    # ── Dense retrieval ───────────────────────────────────────────────────
+    embedding_model: str = "BAAI/bge-small-en-v1.5"
+    faiss_index_path: Path = _PROJECT_ROOT / "data" / "index"
+    embedding_batch_size: int = 256
+
+    # ── Hybrid retrieval (RRF) ────────────────────────────────────────────
+    rrf_k: int = 60
 
     # ── LLM / Generation ─────────────────────────────────────────────────
     anthropic_api_key: str = ""

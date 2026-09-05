@@ -20,7 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from contractiq.chunking import naive_fixed_chunk, structure_aware_chunk
-from contractiq.retrieval_bm25 import BM25Retriever
+from contractiq.retrieval.bm25 import BM25Retriever
 from contractiq.eval import precision_recall, f1, RetrievedSpan
 from contractiq.config import settings
 

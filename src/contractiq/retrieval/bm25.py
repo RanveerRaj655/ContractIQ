@@ -1,5 +1,5 @@
 """
-retrieval_bm25.py
+retrieval/bm25.py
 -----------------
 BM25 sparse retrieval baseline. Pure CPU, no embeddings/GPU needed - this is
 what "search the docs" looked like before dense retrieval, and it's still a
