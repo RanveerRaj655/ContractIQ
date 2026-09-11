@@ -5,12 +5,12 @@ FastAPI web service exposing the ContractIQ Guarded RAG Pipeline.
 """
 
 import json
-import time
 import sys
-from pathlib import Path
+import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi import Depends, FastAPI, HTTPException, Request
 from pydantic import BaseModel
 
 # Add src/ to the path so we can import contractiq
@@ -18,9 +18,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from contractiq.chunking import structure_aware_chunk
 from contractiq.config import settings
-from contractiq.pipeline import RetrievalPipeline
 from contractiq.generation import LLMClient
-from contractiq.guardrails import scan_input, should_abstain, check_hallucination
+from contractiq.guardrails import check_hallucination, scan_input, should_abstain
+from contractiq.pipeline import RetrievalPipeline
 
 # Global state
 pipeline = None
@@ -38,7 +38,7 @@ async def lifespan(app: FastAPI):
     print("--- Starting up ContractIQ API ---")
     
     print(f"Loading 40 benchmark contracts from {settings.corpus_dir}...")
-    with open(settings.benchmark_mini, encoding="utf-8") as f:
+    with open(settings.benchmark_mini, encoding="utf-8") as f:  # noqa: ASYNC230
         bench = json.load(f)
     doc_ids = sorted({snip["file_path"] for t in bench["tests"] for snip in t["snippets"]})
     corpus_files = [settings.corpus_dir / doc_id for doc_id in doc_ids]

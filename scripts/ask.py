@@ -8,8 +8,8 @@ Usage:
 """
 
 import argparse
-import sys
 import json
+import sys
 from pathlib import Path
 
 # Add src/ to the path
@@ -17,9 +17,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from contractiq.chunking import structure_aware_chunk
 from contractiq.config import settings
-from contractiq.pipeline import RetrievalPipeline
 from contractiq.generation import LLMClient
-from contractiq.guardrails import scan_input, should_abstain, check_hallucination
+from contractiq.guardrails import check_hallucination, scan_input, should_abstain
+from contractiq.pipeline import RetrievalPipeline
 
 
 def main():

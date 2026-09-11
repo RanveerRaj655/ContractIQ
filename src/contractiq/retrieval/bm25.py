@@ -12,6 +12,7 @@ without entangling the code.
 """
 
 import re
+
 from rank_bm25 import BM25Okapi
 
 from contractiq.chunking import Chunk

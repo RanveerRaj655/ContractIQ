@@ -12,8 +12,8 @@ ground-truth spans later (same methodology as LegalBench-RAG).
                            merges tiny fragments up to a target size.
 """
 
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
 
 
 @dataclass

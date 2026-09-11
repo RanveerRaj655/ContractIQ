@@ -126,7 +126,7 @@ def main():
     # ── Evaluate each config ─────────────────────────────────────────────
     for config_name, retriever in configs:
         t0 = time.time()
-        avg_p, avg_r, avg_f1, per_cat = evaluate(retriever, tests)
+        avg_p, avg_r, avg_f1, _per_cat = evaluate(retriever, tests)
         eval_time = time.time() - t0
 
         print(f"=== {config_name} (top-{TOP_K}) ===")

@@ -11,8 +11,8 @@ Usage:
 """
 
 from pathlib import Path
-from pydantic_settings import BaseSettings
 
+from pydantic_settings import BaseSettings
 
 # Project root is two levels up from this file: src/contractiq/config.py -> project root
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent

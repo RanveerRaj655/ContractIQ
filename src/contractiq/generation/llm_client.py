@@ -5,6 +5,7 @@ Wrapper around the OpenRouter API for grounded RAG generation.
 """
 
 import os
+
 from openai import OpenAI
 
 from contractiq.chunking import Chunk

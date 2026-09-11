@@ -1,69 +1,132 @@
-# ContractIQ — Starter Package
+# ⚖️ ContractIQ
 
-This is pre-processed data + validated code from the planning session, ready to drop into
-your Antigravity project so you don't have to redo the data prep step.
+> A production-ready, guarded Retrieval-Augmented Generation (RAG) system for legal contract Q&A, benchmarked on the CUAD dataset.
 
-## What's in here
+ContractIQ is designed to answer complex legal questions based on contract documents. It goes beyond standard RAG by implementing robust **guardrails** to ensure reliability, prevent hallucinations, and protect against adversarial inputs.
 
+---
+
+## ✨ Key Features
+
+- **🛡️ Guarded RAG Pipeline**: Built-in guardrails for production safety:
+  - **Input Filtering**: Scans user questions for adversarial or out-of-scope inputs.
+  - **Abstention Mechanism**: Refuses to answer if the retrieval confidence is too low.
+  - **Hallucination Detection**: Cross-checks LLM generation against retrieved context to flag unsupported claims.
+- **🔍 Advanced Retrieval Strategies**: Supports multiple retrieval techniques:
+  - **Lexical (BM25)**
+  - **Dense Vector Search**
+  - **Hybrid Retrieval**
+  - **Cross-Encoder Reranking**
+- **⚡ Fast Web Services**: 
+  - **FastAPI Backend**: High-performance REST API.
+  - **Streamlit Chat UI**: Intuitive frontend interface for easy interaction.
+- **📊 Pre-benchmarked**: Evaluated on the CUAD (Contract Understanding Atticus Dataset) using the LegalBench-RAG methodology.
+
+---
+
+## 🏗️ Architecture
+
+The guarded RAG pipeline ensures high-quality and safe interactions:
+
+```mermaid
+flowchart TD
+    User([User Query]) --> IF[Input Filter Guardrail]
+    IF -- Blocked --> Reject[Reject Request]
+    IF -- Passed --> Ret[Retrieval Pipeline]
+    
+    subgraph Retrieval Pipeline
+        Ret --> BM25[BM25 / Dense / Hybrid]
+        BM25 --> Rerank[Cross-Encoder Reranker]
+    end
+    
+    Rerank --> Abs{Abstention Check}
+    Abs -- Low Confidence --> Abstained[Return: Insufficient Context]
+    Abs -- High Confidence --> Gen[LLM Generation]
+    
+    Gen --> Halluc[Hallucination Guardrail]
+    Halluc -- Supported --> Out[Final Answer + Sources]
+    Halluc -- Unsupported/Partial --> Flag[Flagged Answer + Warnings]
 ```
-data/
-  corpus/            510 CUAD contracts as plain .txt files
-  benchmarks/
-    full.json        6,702 ground-truth queries (all 510 contracts, all 41 clause categories)
-    mini.json        532 ground-truth queries (40 contracts, stratified to cover all 41 categories)
-src/contractiq/
-  chunking.py        naive_fixed_chunk() + structure_aware_chunk() — both tested
-  eval.py            character-level precision/recall/F1 (LegalBench-RAG methodology) — tested
-  retrieval_bm25.py  BM25 baseline retriever
-scripts/
-  prepare_data.py    the script that generated data/ from raw CUAD (reference only, already run)
-  run_baseline_eval.py   runs the baseline comparison, writes to eval_results/
-eval_results/
-  baseline_bm25_chunking_comparison.json   the Day-1 baseline numbers already computed
-requirements.txt
-```
 
-## Ground truth schema (used by both benchmark files)
+---
 
-```json
-{
-  "tests": [
-    {
-      "query": "Highlight the parts (if any) of this contract related to \"Governing Law\"...",
-      "category": "Governing Law",
-      "contract_title": "LIMEENERGYCO_09_09_1999-EX-10-DISTRIBUTOR AGREEMENT",
-      "snippets": [
-        {"file_path": "LIMEENERGYCO_....txt", "span": [1234, 1289]}
-      ]
-    }
-  ]
-}
-```
+## 🚀 Quick Start
 
-`span` is a `[start, end)` character index range into the corresponding file in `data/corpus/`.
-A query can have multiple snippets (multiple answer locations in the same or different documents).
+### 1. Installation
 
-## Already-validated baseline (Day 1, BM25 only)
-
-| Chunking | Precision | Recall | F1 |
-|---|---|---|---|
-| naive_fixed | 0.0109 | 0.0810 | 0.0171 |
-| structure_aware | 0.0105 | 0.0850 | 0.0170 |
-
-Low absolute numbers are expected — CUAD answer spans are short phrases inside larger chunks,
-which caps precision hard. This is the same pattern reported in the LegalBench-RAG paper. The
-point of these numbers is to be your **baseline to beat**, not an end result.
-
-## Quick start
+Ensure you have Python 3.11+ installed. Create a virtual environment and install dependencies:
 
 ```bash
+# Create and activate virtual environment
+python -m venv .venv
+# Windows: .\.venv\Scripts\activate
+# Unix: source .venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
-export PYTHONPATH=src
-python scripts/run_baseline_eval.py
 ```
 
-## Source / attribution
+### 2. Run the Backend API
 
-Built from CUAD v1 (Hendrycks et al., 2021), Creative Commons Attribution 4.0.
-Original: https://github.com/TheAtticusProject/cuad
-Benchmark methodology mirrors LegalBench-RAG (Pipitone & Houir Alami, 2024): https://arxiv.org/abs/2408.10343
+Start the FastAPI backend server (runs on port 8000 by default):
+
+```bash
+export PYTHONPATH=src
+uvicorn api.main:app --reload
+```
+
+### 3. Run the Streamlit Chat UI
+
+In a separate terminal, start the Streamlit frontend:
+
+```bash
+export PYTHONPATH=src
+streamlit run frontend/app.py
+```
+
+Now, navigate to `http://localhost:8501` to start querying your legal contracts!
+
+---
+
+## 📂 Project Structure
+
+```text
+ContractIQ/
+├── api/                  # FastAPI backend service
+├── frontend/             # Streamlit chat interface
+├── src/
+│   └── contractiq/       # Core package
+│       ├── chunking/     # Structure-aware and fixed chunking
+│       ├── generation/   # LLM client abstractions
+│       ├── guardrails/   # Input filter, abstention, hallucination checks
+│       └── retrieval/    # BM25, Dense, Hybrid, Reranker implementations
+├── scripts/              # Evaluation and regression scripts
+├── tests/                # Unit tests (pytest)
+├── data/
+│   ├── corpus/           # 510 CUAD contracts as plain text
+│   └── benchmarks/       # Ground-truth queries for evaluation
+└── eval_results/         # Benchmark results and observability logs
+```
+
+---
+
+## 📈 Evaluation & Baselines
+
+ContractIQ's chunking and retrieval strategies are benchmarked against the CUAD dataset. The evaluation answers use character-level precision/recall/F1 following the LegalBench-RAG methodology.
+
+**Day 1 Baseline (BM25 only):**
+
+| Chunking Strategy | Precision | Recall | F1 |
+|-------------------|-----------|--------|----|
+| `naive_fixed`     | 0.0109    | 0.0810 | 0.0171 |
+| `structure_aware` | 0.0105    | 0.0850 | 0.0170 |
+
+> [!NOTE]
+> Absolute numbers are low due to CUAD answer spans being short phrases inside larger chunks. This baseline serves as a starting point to improve upon with Dense/Hybrid retrieval and Reranking.
+
+---
+
+## 📜 Source & Attribution
+
+- Built using **CUAD v1** (Hendrycks et al., 2021), Creative Commons Attribution 4.0.
+- Benchmark methodology inspired by **LegalBench-RAG** (Pipitone & Houir Alami, 2024).

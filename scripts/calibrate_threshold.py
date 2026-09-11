@@ -14,8 +14,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from contractiq.chunking import structure_aware_chunk
 from contractiq.config import settings
+from contractiq.eval import RetrievedSpan, precision_recall
 from contractiq.pipeline import RetrievalPipeline
-from contractiq.eval import precision_recall, RetrievedSpan
 
 
 def main():
@@ -52,7 +52,7 @@ def main():
         ]
         
         # Calculate recall
-        precision, recall = precision_recall(retrieved_spans, ground_truth_snippets)
+        _precision, recall = precision_recall(retrieved_spans, ground_truth_snippets)
         
         # Get top score
         top_score = retrieved_chunks_scores[0][1] if retrieved_chunks_scores else 0.0

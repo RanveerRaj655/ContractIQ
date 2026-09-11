@@ -7,7 +7,7 @@ Mocks the RetrievalPipeline and LLMClient to avoid actual inference or API calls
 
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -73,7 +73,7 @@ def test_query_rate_limit():
     with TestClient(app) as live_client:
         # Fire 20 fast requests to hit the limit
         for _ in range(20):
-            response = live_client.post("/query", json={"question": "Rate limit test"})
+            live_client.post("/query", json={"question": "Rate limit test"})
             
         # The 21st should 429
         response_429 = live_client.post("/query", json={"question": "Should be blocked"})

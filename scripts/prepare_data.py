@@ -97,7 +97,7 @@ def main():
     # Sample ~35 contracts, but prioritize ones covering diverse / rarer categories
     # so the mini set still has decent coverage of all 41 clause types.
     all_categories = sorted({t["category"] for t in full_tests})
-    contracts_by_fname = {c["fname"]: c for c in contracts_meta}
+    {c["fname"]: c for c in contracts_meta}
 
     chosen_fnames = set()
     # Greedy set-cover: keep adding the contract that covers the most

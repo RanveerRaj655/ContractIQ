@@ -5,15 +5,14 @@ The unified retrieval pipeline. Wraps BM25, Dense, Hybrid, and Reranking
 into a single interface. The active strategy is controlled by config.py.
 """
 
-from typing import Optional
 
 from contractiq.chunking import Chunk
 from contractiq.config import settings
 from contractiq.retrieval import (
     BM25Retriever,
+    CrossEncoderReranker,
     DenseRetriever,
     HybridRetriever,
-    CrossEncoderReranker,
 )
 
 
@@ -22,10 +21,10 @@ class RetrievalPipeline:
         self,
         chunks: list[Chunk],
         # Optionally allow passing pre-built instances to avoid redundant initialization during evaluation
-        bm25_retriever: Optional[BM25Retriever] = None,
-        dense_retriever: Optional[DenseRetriever] = None,
-        hybrid_retriever: Optional[HybridRetriever] = None,
-        reranker: Optional[CrossEncoderReranker] = None,
+        bm25_retriever: BM25Retriever | None = None,
+        dense_retriever: DenseRetriever | None = None,
+        hybrid_retriever: HybridRetriever | None = None,
+        reranker: CrossEncoderReranker | None = None,
     ):
         self.chunks = chunks
         

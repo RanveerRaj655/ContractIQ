@@ -20,9 +20,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from contractiq.chunking import naive_fixed_chunk, structure_aware_chunk
-from contractiq.retrieval.bm25 import BM25Retriever
-from contractiq.eval import precision_recall, f1, RetrievedSpan
 from contractiq.config import settings
+from contractiq.eval import RetrievedSpan, f1, precision_recall
+from contractiq.retrieval.bm25 import BM25Retriever
 
 CORPUS_DIR = settings.corpus_dir
 BENCH_PATH = settings.benchmark_mini
@@ -73,7 +73,7 @@ def main():
         build_time = time.time() - t0
 
         t0 = time.time()
-        avg_p, avg_r, avg_f1, per_cat = evaluate(retriever, tests)
+        avg_p, avg_r, avg_f1, _per_cat = evaluate(retriever, tests)
         eval_time = time.time() - t0
 
         print(f"=== {name} (top-{TOP_K}) ===")

@@ -10,4 +10,4 @@ from contractiq.retrieval.dense import DenseRetriever
 from contractiq.retrieval.hybrid import HybridRetriever
 from contractiq.retrieval.reranker import CrossEncoderReranker
 
-__all__ = ["BM25Retriever", "DenseRetriever", "HybridRetriever", "CrossEncoderReranker"]
+__all__ = ["BM25Retriever", "CrossEncoderReranker", "DenseRetriever", "HybridRetriever"]

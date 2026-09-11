@@ -7,8 +7,8 @@ the text they claim to represent.
 """
 
 import pytest
-from contractiq.chunking import naive_fixed_chunk, structure_aware_chunk, Chunk
 
+from contractiq.chunking import Chunk, naive_fixed_chunk, structure_aware_chunk
 
 # ── Helpers ──────────────────────────────────────────────────────────────
 

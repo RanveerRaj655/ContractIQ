@@ -6,16 +6,14 @@ These test the interval arithmetic in eval.py against known-correct results,
 covering the critical edge cases for RAG evaluation.
 """
 
-import pytest
 from contractiq.eval import (
-    precision_recall,
+    RetrievedSpan,
     f1,
     merge_intervals,
     overlap_length,
+    precision_recall,
     total_length,
-    RetrievedSpan,
 )
-
 
 # ── Unit tests for interval helpers ──────────────────────────────────────
 

@@ -4,9 +4,9 @@ frontend/app.py
 Streamlit Chat UI that calls the FastAPI backend for Guarded RAG on contracts.
 """
 
-import streamlit as st
+
 import requests
-import json
+import streamlit as st
 
 # Configuration
 API_URL = "http://127.0.0.1:8000"
@@ -38,7 +38,7 @@ with st.sidebar:
             st.dataframe(table_data, use_container_width=True, hide_index=True)
         else:
             st.error("Could not load evaluation report.")
-    except Exception as e:
+    except requests.RequestException as e:
         st.error(f"Backend not reachable: {e}")
 
     st.markdown("---")
@@ -52,9 +52,8 @@ query = st.chat_input("Ask a question about the contracts (e.g. What is the gove
 if query:
     st.chat_message("user").write(query)
     
-    with st.chat_message("assistant"):
-        with st.spinner("Analyzing contracts..."):
-            try:
+    with st.chat_message("assistant"), st.spinner("Analyzing contracts..."):
+        try:
                 response = requests.post(f"{API_URL}/query", json={"question": query})
                 
                 if response.status_code == 429:
